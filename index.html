@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hrací kostka</title>
     <style>
-        /* CSS: Vzhled a stylování stránky */
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f2f5;
@@ -23,42 +22,77 @@
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            width: 280px;
         }
 
         h1 {
             color: #333;
             margin-top: 0;
+            margin-bottom: 20px;
         }
 
-        /* Vizuální podoba kostky */
+        /* Vizuální podoba kostky s CSS transformacemi pro animaci hodu */
         .dice {
             width: 100px;
             height: 100px;
-            background-color: #fff;
+            background-color: #ffffff;
             border: 3px solid #333;
             border-radius: 16px;
             font-size: 48px;
+            font-weight: bold;
+            color: #222;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 20px auto;
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            user-select: none;
+            transition: transform 0.15s ease-in-out;
         }
 
-        /* Tlačítko */
+        /* Animace otáčení při hodu */
+        .rolling {
+            animation: roll 0.4s ease-in-out;
+        }
+
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(0.9); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* Tlačítko s jemným efekt stisku */
         button {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-size: 16px;
-            border-radius: 6px;
+            font-weight: bold;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
         }
 
         button:hover {
             background-color: #0056b3;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Historie hodů */
+        .history {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            min-height: 20px;
         }
     </style>
 </head>
@@ -67,24 +101,53 @@
     <div class="container">
         <h1>Hrací kostka</h1>
         
-        <!-- HTML: Zde se bude zobrazovat hozené číslo -->
         <div id="dice" class="dice">?</div>
         
-        <!-- HTML: Tlačítko pro spuštění akce v JavaScriptu -->
-        <button onclick="hodKostkou()">Hodit kostkou</button>
+        <button id="rollBtn" onclick="hodKostkou()">Hodit kostkou</button>
+
+        <div class="history">
+            Poslední hody: <span id="historyList">-</span>
+        </div>
     </div>
 
     <script>
-        // JAVASCRIPT: Logika aplikace
+        const posledniHody = [];
+
         function hodKostkou() {
-            // 1. Vygeneruje náhodné číslo od 1 do 6
-            let cislo = Math.floor(Math.random() * 6) + 1;
+            const kostkaElement = document.getElementById("dice");
+            const btn = document.getElementById("rollBtn");
+            const historyElement = document.getElementById("historyList");
 
-            // 2. Najde element kostky v HTML podle jeho ID
-            let kostkaElement = document.getElementById("dice");
+            // Dočasně vypne tlačítko během animace
+            btn.disabled = true;
 
-            // 3. Změní text uvnitř elementu na vygenerované číslo
-            kostkaElement.textContent = cislo;
+            // Přidá CSS třídu pro spuštění animace
+            kostkaElement.classList.add("rolling");
+
+            // Rychlé střídání čísel během animace
+            let counter = 0;
+            const interval = setInterval(() => {
+                kostkaElement.textContent = Math.floor(Math.random() * 6) + 1;
+                counter++;
+                if (counter > 5) {
+                    clearInterval(interval);
+                }
+            }, 60);
+
+            // Vyhodnocení konečného čísla po skončení animace
+            setTimeout(() => {
+                const konecneCislo = Math.floor(Math.random() * 6) + 1;
+                kostkaElement.textContent = konecneCislo;
+                kostkaElement.classList.remove("rolling");
+                btn.disabled = false;
+
+                // Uložení do historie (maximálně 5 položek)
+                posledniHody.unshift(konecneCislo);
+                if (posledniHody.length > 5) {
+                    posledniHody.pop();
+                }
+                historyElement.textContent = posledniHody.join(", ");
+            }, 400);
         }
     </script>
 
