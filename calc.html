@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechanical Precision Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+        :root {
+            --bg-main: #141618;
+            --chassis-bg: #1e2227;
+            --display-bg: #0f1114;
+            --btn-num-bg: #282c34;
+            --btn-num-active: #1f2229;
+            --btn-op-bg: #aa4b2a; /* Deep rust terracotta */
+            --btn-op-hover: #be532f;
+            --btn-action-bg: #3e4451;
+            --accent-67: #d97724;
+            --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: #dcdfe4;
+            font-family: var(--font-mono);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Tactile Key Press Behavior */
+        .key-tactile {
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.08);
+            transition: transform 0.04s ease, box-shadow 0.04s ease, background-color 0.15s ease;
+        }
+
+        .key-tactile:active, .key-pressed {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 0 rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(0,0,0,0.2);
+        }
+
+        /* Secret Console Terminal Overlay Styles */
+        .terminal-scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 6px 100%;
+        }
+
+        /* Custom Scrollbar for Formula History */
+        ::-webkit-scrollbar {
+            height: 4px;
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3e4451;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-center items-center p-3 sm:p-6 overflow-x-hidden">
+
+    <main class="w-full max-w-sm sm:max-w-md">
+        <!-- Machine Info Bar -->
+        <header class="flex justify-between items-center mb-2 px-1 text-xs text-neutral-500 font-semibold tracking-wider">
+            <span>MODEL: MC-67 PRIME</span>
+            <span id="status-tag" class="text-neutral-600">STATE: READY</span>
+        </header>
+
+        <!-- Main Chassis Container -->
+        <div class="bg-[#1e2227] border-2 border-[#2c313a] rounded-xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+            
+            <!-- Output Display Screen -->
+            <div class="bg-[#0f1114] border border-[#282c34] rounded-lg p-4 mb-5 text-right flex flex-col justify-between min-h-[108px] shadow-inner relative">
+                
+                <!-- Formula / Expression History line -->
+                <div id="formula-display" class="text-xs sm:text-sm text-neutral-500 font-mono overflow-x-auto whitespace-nowrap min-h-[20px] mb-1 leading-tight tracking-wide">
+                    &nbsp;
+                </div>
+
+                <!-- Main Active Number Display -->
+                <div class="flex items-baseline justify-end overflow-hidden">
+                    <span id="easter-indicator" class="hidden text-amber-500 text-xs font-bold mr-auto self-center bg-amber-950/40 border border-amber-800/60 px-1.5 py-0.5 rounded">
+                        MODE: 67
+                    </span>
+                    <span id="main-display" class="text-3xl sm:text-4xl font-extrabold text-neutral-100 tracking-tight overflow-x-auto whitespace-nowrap scrollbar-none">
+                        0
+                    </span>
+                </div>
+            </div>
+
+            <!-- Keyboard Layout Grid -->
+            <div class="grid grid-cols-4 gap-2.5 sm:gap-3">
+                
+                <!-- Row 1: Memory & Clear Controls -->
+                <button data-action="clear-all" class="key-tactile bg-[#3e4451] hover:bg-[#4b5263] text-rose-300 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base border border-rose-900/30">
+                    AC
+                </button>
+                <button data-action="delete" class="key-tactile bg-[#3e4451] hover:bg-[#4b5263] text-neutral-200 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base">
+                    DEL
+                </button>
+                <button data-action="percent" class="key-tactile bg-[#3e4451] hover:bg-[#4b5263] text-neutral-200 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base">
+                    %
+                </button>
+                <button data-operator="/" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    ÷
+                </button>
+
+                <!-- Row 2 -->
+                <button data-number="7" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    7
+                </button>
+                <button data-number="8" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    8
+                </button>
+                <button data-number="9" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    9
+                </button>
+                <button data-operator="*" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    ×
+                </button>
+
+                <!-- Row 3 -->
+                <button data-number="4" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    4
+                </button>
+                <button data-number="5" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    5
+                </button>
+                <button data-number="6" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    6
+                </button>
+                <button data-operator="-" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    −
+                </button>
+
+                <!-- Row 4 -->
+                <button data-number="1" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    1
+                </button>
+                <button data-number="2" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    2
+                </button>
+                <button data-number="3" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    3
+                </button>
+                <button data-operator="+" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    +
+                </button>
+
+                <!-- Row 5 -->
+                <button data-action="toggle-sign" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-300 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base">
+                    ±
+                </button>
+                <button data-number="0" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    0
+                </button>
+                <button data-action="decimal" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
+                    .
+                </button>
+                <button data-action="equals" class="key-tactile bg-[#d97724] hover:bg-[#ea842c] text-neutral-950 font-extrabold py-3.5 sm:py-4 rounded-md text-lg sm:text-xl">
+                    =
+                </button>
+            </div>
+
+            <!-- Footer Legend & Instructions -->
+            <footer class="mt-5 pt-3 border-t border-[#2c313a] flex justify-between items-center text-[10px] text-neutral-500 uppercase tracking-widest font-mono">
+                <span>KEYBOARD READY</span>
+                <span>NUMPAD SUPPORT</span>
+            </footer>
+
+            <!-- Secret "67" Terminal Console Easter Egg Overlay -->
+            <div id="terminal-overlay" class="hidden absolute inset-0 bg-[#0c0d0f] rounded-xl border-2 border-amber-600/80 p-4 sm:p-5 flex-col justify-between z-20 terminal-scanlines">
+                <div class="flex justify-between items-center border-b border-amber-900/60 pb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        <span class="text-xs font-bold text-amber-500 tracking-wider">PROTOCOL_67 // ACTIVE</span>
+                    </div>
+                    <button id="close-terminal" class="text-xs bg-amber-950 text-amber-400 hover:bg-amber-900 px-2 py-1 rounded border border-amber-700/50 font-bold">
+                        ESC / DISMISS
+                    </button>
+                </div>
+
+                <div class="my-3 space-y-2 text-xs font-mono text-amber-400/90 overflow-y-auto max-h-[230px] pr-1">
+                    <p class="text-amber-300 font-semibold">&gt; SEQUENCE '67' TRIGGERED</p>
+                    <div class="bg-amber-950/20 border border-amber-900/40 p-2 rounded space-y-1">
+                        <p>&gt; Prime Number: 19th prime number</p>
+                        <p>&gt; Lucky Prime &amp; Chen Prime</p>
+                        <p>&gt; Atomic Number: Holmium (Ho)</p>
+                        <p>&gt; Binary: 1000011</p>
+                        <p>&gt; Hexadecimal: 0x43</p>
+                    </div>
+                    <p class="text-amber-500/80 text-[11px] leading-relaxed italic">
+                        "67 is the smallest prime number that is not a Mersenne prime or Fermat prime."
+                    </p>
+                    <div id="synth-log" class="text-[10px] text-amber-600 font-mono pt-1">
+                        &gt; Audio synth resonant tone played at 670Hz.
+                    </div>
+                </div>
+
+                <div class="border-t border-amber-900/60 pt-2 flex justify-between items-center text-[10px] text-amber-600">
+                    <span>SYNTH FREQ: 670Hz</span>
+                    <span>PRESS 'AC' TO RETURN</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Core Calculator State Management
+        class Calculator {
+            constructor(mainDisplayEl, formulaDisplayEl, indicatorEl, statusTagEl) {
+                this.mainDisplayEl = mainDisplayEl;
+                this.formulaDisplayEl = formulaDisplayEl;
+                this.indicatorEl = indicatorEl;
+                this.statusTagEl = statusTagEl;
+                
+                this.reset();
+                this.setupAudioContext();
+            }
+
+            reset() {
+                this.currentInput = '0';
+                this.previousInput = null;
+                this.operator = null;
+                this.waitingForNextOperand = false;
+                this.expressionHistory = '';
+                this.updateDisplay();
+            }
+
+            // Web Audio Synthesizer for tactile feedback & 67 easter egg frequency
+            setupAudioContext() {
+                this.audioCtx = null;
+            }
+
+            initAudio() {
+                if (!this.audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.audioCtx = new AudioContext();
+                    }
+                }
+            }
+
+            playTone(freq = 440, type = 'sine', duration = 0.05) {
+                try {
+                    this.initAudio();
+                    if (!this.audioCtx) return;
+                    
+                    if (this.audioCtx.state === 'suspended') {
+                        this.audioCtx.resume();
+                    }
+
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0.08, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(this.audioCtx.currentTime + duration);
+                } catch (e) {
+                    // Audio context errors handled gracefully
+                }
+            }
+
+            play67Sequence() {
+                this.playTone(335, 'square', 0.1);
+                setTimeout(() => this.playTone(670, 'sawtooth', 0.3), 100);
+            }
+
+            inputDigit(digit) {
+                this.playTone(520, 'sine', 0.03);
+
+                if (this.waitingForNextOperand) {
+                    this.currentInput = digit;
+                    this.waitingForNextOperand = false;
+                } else {
+                    this.currentInput = this.currentInput === '0' ? digit : this.currentInput + digit;
+                }
+
+                this.updateDisplay();
+                this.check67Trigger();
+            }
+
+            inputDecimal() {
+                this.playTone(480, 'sine', 0.03);
+
+                if (this.waitingForNextOperand) {
+                    this.currentInput = '0.';
+                    this.waitingForNextOperand = false;
+                } else if (!this.currentInput.includes('.')) {
+                    this.currentInput += '.';
+                }
+
+                this.updateDisplay();
+            }
+
+            handleOperator(nextOperator) {
+                this.playTone(380, 'triangle', 0.04);
+                const inputValue = parseFloat(this.currentInput);
+
+                if (this.operator && this.waitingForNextOperand) {
+                    this.operator = nextOperator;
+                    this.expressionHistory = `${this.previousInput} ${this.formatOperatorSymbol(nextOperator)}`;
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (this.previousInput === null) {
+                    this.previousInput = inputValue;
+                } else if (this.operator) {
+                    const result = this.calculate(this.previousInput, inputValue, this.operator);
+                    this.currentInput = String(this.formatResult(result));
+                    this.previousInput = result;
+                }
+
+                this.waitingForNextOperand = true;
+                this.operator = nextOperator;
+                this.expressionHistory = `${this.previousInput} ${this.formatOperatorSymbol(nextOperator)}`;
+                this.updateDisplay();
+                this.check67Trigger();
+            }
+
+            calculate(firstOperand, secondOperand, operator) {
+                switch (operator) {
+                    case '+': return firstOperand + secondOperand;
+                    case '-': return firstOperand - secondOperand;
+                    case '*': return firstOperand * secondOperand;
+                    case '/': return secondOperand !== 0 ? firstOperand / secondOperand : 'Error';
+                    default: return secondOperand;
+                }
+            }
+
+            evaluateEquals() {
+                this.playTone(600, 'sine', 0.05);
+
+                if (this.operator === null || this.previousInput === null) {
+                    // Re-evaluating standalone input check
+                    this.check67Trigger(true);
+                    return;
+                }
+
+                const inputValue = parseFloat(this.currentInput);
+                const result = this.calculate(this.previousInput, inputValue, this.operator);
+
+                this.expressionHistory = `${this.previousInput} ${this.formatOperatorSymbol(this.operator)} ${inputValue} =`;
+                this.currentInput = String(this.formatResult(result));
+                this.previousInput = null;
+                this.operator = null;
+                this.waitingForNextOperand = true;
+
+                this.updateDisplay();
+                this.check67Trigger(true);
+            }
+
+            toggleSign() {
+                this.playTone(450, 'sine', 0.03);
+                if (this.currentInput !== '0' && this.currentInput !== 'Error') {
+                    this.currentInput = this.currentInput.startsWith('-') ? this.currentInput.slice(1) : '-' + this.currentInput;
+                    this.updateDisplay();
+                    this.check67Trigger();
+                }
+            }
+
+            applyPercent() {
+                this.playTone(450, 'sine', 0.03);
+                const val = parseFloat(this.currentInput);
+                if (!isNaN(val)) {
+                    this.currentInput = String(val / 100);
+                    this.updateDisplay();
+                }
+            }
+
+            deleteLastChar() {
+                this.playTone(300, 'sine', 0.03);
+                if (this.waitingForNextOperand) return;
+
+                if (this.currentInput.length > 1) {
+                    this.currentInput = this.currentInput.slice(0, -1);
+                } else {
+                    this.currentInput = '0';
+                }
+                this.updateDisplay();
+                this.check67Trigger();
+            }
+
+            formatResult(num) {
+                if (typeof num === 'string') return num;
+                if (isNaN(num) || !isFinite(num)) return 'Error';
+                // Precision clamping to avoid float overflow
+                return Math.round(num * 1e8) / 1e8;
+            }
+
+            formatOperatorSymbol(op) {
+                switch(op) {
+                    case '/': return '÷';
+                    case '*': return '×';
+                    case '-': return '−';
+                    case '+': return '+';
+                    default: return op;
+                }
+            }
+
+            updateDisplay() {
+                this.mainDisplayEl.textContent = this.currentInput;
+                this.formulaDisplayEl.textContent = this.expressionHistory || '\u00A0';
+            }
+
+            check67Trigger(forceConsole = false) {
+                const is67 = this.currentInput === '67' || this.currentInput === '67.0';
+                
+                if (is67) {
+                    this.indicatorEl.classList.remove('hidden');
+                    this.statusTagEl.textContent = 'MODE: 67';
+                    this.statusTagEl.classList.add('text-amber-500');
+
+                    if (forceConsole) {
+                        this.triggerEasterEggOverlay();
+                    }
+                } else {
+                    this.indicatorEl.classList.add('hidden');
+                    this.statusTagEl.textContent = 'STATE: READY';
+                    this.statusTagEl.classList.remove('text-amber-500');
+                }
+            }
+
+            triggerEasterEggOverlay() {
+                const overlay = document.getElementById('terminal-overlay');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+                this.play67Sequence();
+            }
+        }
+
+        // Initialize Calculator
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainDisplay = document.getElementById('main-display');
+            const formulaDisplay = document.getElementById('formula-display');
+            const indicator = document.getElementById('easter-indicator');
+            const statusTag = document.getElementById('status-tag');
+            const terminalOverlay = document.getElementById('terminal-overlay');
+            const closeTerminalBtn = document.getElementById('close-terminal');
+
+            const calc = new Calculator(mainDisplay, formulaDisplay, indicator, statusTag);
+
+            document.querySelectorAll('button[data-number]').forEach(btn => {
+                btn.addEventListener('click', () => calc.inputDigit(btn.dataset.number));
+            });
+
+            document.querySelectorAll('button[data-operator]').forEach(btn => {
+                btn.addEventListener('click', () => calc.handleOperator(btn.dataset.operator));
+            });
+
+            document.querySelectorAll('button[data-action]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.dataset.action;
+                    switch (action) {
+                        case 'clear-all':
+                            calc.reset();
+                            terminalOverlay.classList.add('hidden');
+                            terminalOverlay.classList.remove('flex');
+                            break;
+                        case 'delete':
+                            calc.deleteLastChar();
+                            break;
+                        case 'decimal':
+                            calc.inputDecimal();
+                            break;
+                        case 'equals':
+                            calc.evaluateEquals();
+                            break;
+                        case 'toggle-sign':
+                            calc.toggleSign();
+                            break;
+                        case 'percent':
+                            calc.applyPercent();
+                            break;
+                    }
+                });
+            });
+
+            closeTerminalBtn.addEventListener('click', () => {
+                terminalOverlay.classList.add('hidden');
+                terminalOverlay.classList.remove('flex');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                // Number Keys (0-9)
+                if (e.key >= '0' && e.key <= '9') {
+                    calc.inputDigit(e.key);
+                    highlightButton(`[data-number="${e.key}"]`);
+                }
+                // Operators (+, -, *, /)
+                else if (['+', '-', '*', '/'].includes(e.key)) {
+                    e.preventDefault();
+                    calc.handleOperator(e.key);
+                    highlightButton(`[data-operator="${e.key}"]`);
+                }
+                // Enter or '=' for Equals
+                else if (e.key === 'Enter' || e.key === '=') {
+                    e.preventDefault();
+                    calc.evaluateEquals();
+                    highlightButton('[data-action="equals"]');
+                }
+                // Backspace for DEL
+                else if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    calc.deleteLastChar();
+                    highlightButton('[data-action="delete"]');
+                }
+                // Escape for Clear All
+                else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    calc.reset();
+                    terminalOverlay.classList.add('hidden');
+                    terminalOverlay.classList.remove('flex');
+                    highlightButton('[data-action="clear-all"]');
+                }
+                // Decimal point
+                else if (e.key === '.') {
+                    calc.inputDecimal();
+                    highlightButton('[data-action="decimal"]');
+                }
+                // Percent %
+                else if (e.key === '%') {
+                    calc.applyPercent();
+                    highlightButton('[data-action="percent"]');
+                }
+            });
+
+            // Visual Key-press Feedback Helper for Keyboard Inputs
+            function highlightButton(selector) {
+                const btn = document.querySelector(selector);
+                if (btn) {
+                    btn.classList.add('key-pressed');
+                    setTimeout(() => btn.classList.remove('key-pressed'), 120);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
