@@ -3,214 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mechanical Precision Calculator</title>
+    <title>Model-67 Scientific Precision Computer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
         :root {
-            --bg-main: #141618;
-            --chassis-bg: #1e2227;
-            --display-bg: #0f1114;
-            --btn-num-bg: #282c34;
-            --btn-num-active: #1f2229;
-            --btn-op-bg: #aa4b2a; /* Deep rust terracotta */
-            --btn-op-hover: #be532f;
-            --btn-action-bg: #3e4451;
-            --accent-67: #d97724;
-            --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+            --chassis-bg: #18191b;
+            --bezel-bg: #222428;
+            --display-bg: #101113;
+            --screen-text: #d8ded6;
+            --btn-num-bg: #2a2d32;
+            --btn-num-text: #e1e4e8;
+            --btn-func-bg: #353a40;
+            --btn-func-text: #b0b8c0;
+            --btn-accent-bg: #d9531e;
+            --btn-accent-text: #ffffff;
+            --btn-mem-bg: #233238;
+            --btn-mem-text: #7ba8b6;
+            --border-metal: #383d44;
+            --font-stack: 'IBM Plex Mono', 'Courier Prime', monospace;
         }
 
         body {
-            background-color: var(--bg-main);
-            color: #dcdfe4;
-            font-family: var(--font-mono);
+            background-color: #0f1012;
+            color: #d1d5db;
+            font-family: var(--font-stack);
             user-select: none;
             -webkit-user-select: none;
+            background-image: radial-gradient(#22252a 1px, transparent 0);
+            background-size: 16px 16px;
         }
 
         /* Tactile Key Press Behavior */
-        .key-tactile {
-            box-shadow: 0 4px 0 0 rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.08);
-            transition: transform 0.04s ease, box-shadow 0.04s ease, background-color 0.15s ease;
+        .btn-tactile {
+            box-shadow: 0 3px 0 0 #0d0e0f, inset 0 1px 0 0 rgba(255,255,255,0.08);
+            transition: transform 0.03s ease, box-shadow 0.03s ease, background-color 0.1s ease;
         }
 
-        .key-tactile:active, .key-pressed {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 0 rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(0,0,0,0.2);
+        .btn-tactile:active, .btn-pressed {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 0 #0d0e0f, inset 0 1px 0 0 rgba(0,0,0,0.3);
         }
 
-        /* Secret Console Terminal Overlay Styles */
-        .terminal-scanlines {
+        .led-indicator {
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.8), 0 0 4px currentColor;
+        }
+
+        /* Paper Tape Custom Styling */
+        .paper-tape {
+            background-color: #141517;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 0);
+            background-size: 100% 20px;
+        }
+
+        /* CRT / Scanline Diagnostic Effect */
+        .crt-overlay {
             background: linear-gradient(
                 rgba(18, 16, 16, 0) 50%, 
-                rgba(0, 0, 0, 0.25) 50%
-            ), linear-gradient(
-                90deg,
-                rgba(255, 0, 0, 0.03),
-                rgba(0, 255, 0, 0.01),
-                rgba(0, 0, 255, 0.03)
+                rgba(0, 0, 0, 0.3) 50%
             );
-            background-size: 100% 3px, 6px 100%;
+            background-size: 100% 4px;
         }
 
-        /* Custom Scrollbar for Formula History */
+        /* Custom Scrollbar for Ledger */
         ::-webkit-scrollbar {
-            height: 4px;
-            width: 4px;
+            width: 5px;
+            height: 5px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.2);
+            background: #141517;
         }
         ::-webkit-scrollbar-thumb {
-            background: #3e4451;
-            border-radius: 2px;
+            background: #383d44;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b525d;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-center items-center p-3 sm:p-6 overflow-x-hidden">
+<body class="min-h-screen flex flex-col justify-center items-center p-2 sm:p-6 overflow-x-hidden">
 
-    <main class="w-full max-w-sm sm:max-w-md">
-        <!-- Machine Info Bar -->
-        <header class="flex justify-between items-center mb-2 px-1 text-xs text-neutral-500 font-semibold tracking-wider">
-            <span>MODEL: MC-67 PRIME</span>
-            <span id="status-tag" class="text-neutral-600">STATE: READY</span>
-        </header>
+    <main class="w-full max-w-5xl my-auto">
+        
+        <!-- Header Spec Plate -->
+        <div class="flex justify-between items-end border-b border-[#383d44] pb-2 mb-3 px-1 text-xs text-neutral-400 font-mono tracking-wider">
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-neutral-200 tracking-widest">LABORATORY COMPUTER</span>
+                <span class="text-[10px] bg-[#222428] border border-[#383d44] px-1.5 py-0.5 text-neutral-400">SER. 67-0091A</span>
+            </div>
+            <div class="hidden sm:flex gap-4 text-[11px] text-neutral-500">
+                <span>RESONANCE: 670Hz</span>
+                <span>SYSTEM: OK</span>
+            </div>
+        </div>
 
-        <!-- Main Chassis Container -->
-        <div class="bg-[#1e2227] border-2 border-[#2c313a] rounded-xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
-            
-            <!-- Output Display Screen -->
-            <div class="bg-[#0f1114] border border-[#282c34] rounded-lg p-4 mb-5 text-right flex flex-col justify-between min-h-[108px] shadow-inner relative">
+        <!-- Main Assembly (Asymmetric Two-Column Layout) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+            <!-- Left Panel: Physical Calculator Console (8 cols) -->
+            <div class="lg:col-span-8 bg-[#18191b] border-2 border-[#383d44] p-4 sm:p-6 shadow-2xl relative">
                 
-                <!-- Formula / Expression History line -->
-                <div id="formula-display" class="text-xs sm:text-sm text-neutral-500 font-mono overflow-x-auto whitespace-nowrap min-h-[20px] mb-1 leading-tight tracking-wide">
-                    &nbsp;
+                <!-- Top Status Strip & Physical Mode Toggle Switches -->
+                <div class="flex flex-wrap justify-between items-center bg-[#101113] border border-[#2c3036] p-2.5 mb-4 text-xs font-mono">
+                    <div class="flex items-center gap-4">
+                        <!-- Mode Switch: DEG / RAD -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-neutral-500 text-[10px] uppercase font-bold">ANGLE</span>
+                            <div class="inline-flex border border-[#383d44] bg-[#18191b] p-0.5">
+                                <button id="btn-deg" class="px-2 py-0.5 text-[11px] font-bold bg-[#d9531e] text-white">DEG</button>
+                                <button id="btn-rad" class="px-2 py-0.5 text-[11px] font-bold text-neutral-400 hover:text-white">RAD</button>
+                            </div>
+                        </div>
+
+                        <!-- 2nd Function Toggle -->
+                        <div class="flex items-center gap-2">
+                            <button id="btn-2nd" class="px-2.5 py-1 text-[11px] font-bold border border-[#383d44] bg-[#2a2d32] text-neutral-300 hover:bg-[#353a40]">
+                                <span id="led-2nd" class="inline-block w-1.5 h-1.5 rounded-full bg-neutral-600 mr-1.5"></span>2nd
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Display Indicator -->
+                    <div class="flex items-center gap-3 mt-2 sm:mt-0 text-[11px]">
+                        <span id="mem-indicator" class="text-neutral-600 font-bold">MEM: EMPTY</span>
+                        <span id="status-tag" class="text-neutral-400 border border-[#2a2d32] px-1.5 py-0.5">READY</span>
+                    </div>
                 </div>
 
-                <!-- Main Active Number Display -->
-                <div class="flex items-baseline justify-end overflow-hidden">
-                    <span id="easter-indicator" class="hidden text-amber-500 text-xs font-bold mr-auto self-center bg-amber-950/40 border border-amber-800/60 px-1.5 py-0.5 rounded">
-                        MODE: 67
-                    </span>
-                    <span id="main-display" class="text-3xl sm:text-4xl font-extrabold text-neutral-100 tracking-tight overflow-x-auto whitespace-nowrap scrollbar-none">
-                        0
-                    </span>
+                <!-- Primary CRT Display Screen -->
+                <div class="bg-[#101113] border-2 border-[#2c3036] p-4 mb-5 text-right font-mono flex flex-col justify-between min-h-[110px] relative shadow-inner">
+                    <!-- Upper Calculation Ledger Line -->
+                    <div id="formula-display" class="text-xs sm:text-sm text-neutral-500 overflow-x-auto whitespace-nowrap min-h-[22px] mb-1 tracking-wide">
+                        &nbsp;
+                    </div>
+
+                    <!-- Main Numeric Output Line -->
+                    <div class="flex items-baseline justify-end overflow-hidden">
+                        <span id="easter-indicator" class="hidden text-[#d9531e] text-xs font-bold mr-auto self-center border border-[#d9531e]/50 px-1.5 py-0.5">
+                            PROTOCOL 67
+                        </span>
+                        <span id="main-display" class="text-3xl sm:text-4xl font-bold text-[#d8ded6] tracking-tight overflow-x-auto whitespace-nowrap">
+                            0
+                        </span>
+                    </div>
                 </div>
+
+                <!-- Keypad Grid Assembly -->
+                <div class="space-y-2.5">
+                    
+                    <!-- Row 1: Memory Controls & Clearing -->
+                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2">
+                        <button data-action="mc" class="btn-tactile bg-[#233238] text-[#7ba8b6] font-bold py-2 sm:py-2.5 text-xs sm:text-sm">MC</button>
+                        <button data-action="mr" class="btn-tactile bg-[#233238] text-[#7ba8b6] font-bold py-2 sm:py-2.5 text-xs sm:text-sm">MR</button>
+                        <button data-action="m-plus" class="btn-tactile bg-[#233238] text-[#7ba8b6] font-bold py-2 sm:py-2.5 text-xs sm:text-sm">M+</button>
+                        <button data-action="m-minus" class="btn-tactile bg-[#233238] text-[#7ba8b6] font-bold py-2 sm:py-2.5 text-xs sm:text-sm">M-</button>
+                        <button data-action="clear-entry" class="btn-tactile bg-[#353a40] text-amber-400 font-bold py-2 sm:py-2.5 text-xs sm:text-sm">CE</button>
+                        <button data-action="clear-all" class="btn-tactile bg-[#353a40] text-rose-400 font-bold py-2 sm:py-2.5 text-xs sm:text-sm">AC</button>
+                    </div>
+
+                    <!-- Row 2: Advanced Scientific Functions 1 -->
+                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2">
+                        <button data-func="sin" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">sin</span>
+                        </button>
+                        <button data-func="cos" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">cos</span>
+                        </button>
+                        <button data-func="tan" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">tan</span>
+                        </button>
+                        <button data-func="ln" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">ln</span>
+                        </button>
+                        <button data-func="log10" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">log</span>
+                        </button>
+                        <button data-action="delete" class="btn-tactile bg-[#353a40] text-neutral-200 font-bold py-2.5 text-xs sm:text-sm">DEL</button>
+                    </div>
+
+                    <!-- Row 3: Advanced Scientific Functions 2 -->
+                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2">
+                        <button data-func="sqr" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">x²</span>
+                        </button>
+                        <button data-operator="pow" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">x^y</span>
+                        </button>
+                        <button data-func="sqrt" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">√x</span>
+                        </button>
+                        <button data-func="cbrt" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">
+                            <span class="func-primary">∛x</span>
+                        </button>
+                        <button data-func="fact" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">n!</button>
+                        <button data-operator="mod" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">MOD</button>
+                    </div>
+
+                    <!-- Row 4: Keypad Digits & Arithmetic 1 -->
+                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2">
+                        <button data-const="pi" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">π</button>
+                        <button data-const="e" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">e</button>
+                        <button data-number="7" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">7</button>
+                        <button data-number="8" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">8</button>
+                        <button data-number="9" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">9</button>
+                        <button data-operator="/" class="btn-tactile bg-[#d9531e] text-white font-bold py-3 text-base">÷</button>
+                    </div>
+
+                    <!-- Row 5: Keypad Digits & Arithmetic 2 -->
+                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2">
+                        <button data-action="paren-open" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">(</button>
+                        <button data-action="paren-close" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">)</button>
+                        <button data-number="4" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">4</button>
+                        <button data-number="5" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">5</button>
+                        <button data-number="6" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">6</button>
+                        <button data-operator="*" class="btn-tactile bg-[#d9531e] text-white font-bold py-3 text-base">×</button>
+                    </div>
+
+                    <!-- Row 6: Keypad Digits & Arithmetic 3 -->
+                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2">
+                        <button data-func="abs" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">|x|</button>
+                        <button data-func="inv" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-2.5 text-xs sm:text-sm">1/x</button>
+                        <button data-number="1" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">1</button>
+                        <button data-number="2" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">2</button>
+                        <button data-number="3" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">3</button>
+                        <button data-operator="-" class="btn-tactile bg-[#d9531e] text-white font-bold py-3 text-base">−</button>
+                    </div>
+
+                    <!-- Row 7: Bottom Action Row -->
+                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2">
+                        <button data-action="toggle-sign" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-3 text-sm">±</button>
+                        <button data-action="percent" class="btn-tactile bg-[#353a40] text-[#b0b8c0] font-bold py-3 text-sm">%</button>
+                        <button data-number="0" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">0</button>
+                        <button data-action="decimal" class="btn-tactile bg-[#2a2d32] text-[#e1e4e8] font-bold py-3 text-base">.</button>
+                        <button data-action="equals" class="col-span-2 btn-tactile bg-[#d9531e] text-white font-bold py-3 text-lg border border-orange-500/30">=</button>
+                    </div>
+
+                </div>
+
+                <!-- Footer Console Legend -->
+                <div class="mt-4 pt-3 border-t border-[#2c3036] flex justify-between items-center text-[10px] text-neutral-500 font-mono">
+                    <span>HARDWARE MATH ENGINE</span>
+                    <span>FULL NUMPAD MAP ACTIVE</span>
+                </div>
+
+                <!-- Hidden Diagnostic Protocol 67 CRT Terminal Screen Overlay -->
+                <div id="terminal-overlay" class="hidden absolute inset-0 bg-[#0c0e10] border-2 border-[#d9531e] p-4 sm:p-6 flex-col justify-between z-30 crt-overlay">
+                    <div class="flex justify-between items-center border-b border-[#d9531e]/50 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 bg-[#d9531e] animate-ping"></span>
+                            <span class="text-xs font-bold text-[#d9531e] tracking-widest">DIAGNOSTIC PROTOCOL 67</span>
+                        </div>
+                        <button id="close-terminal" class="text-xs bg-[#222428] text-neutral-300 hover:bg-[#353a40] px-2.5 py-1 border border-[#383d44] font-mono font-bold">
+                            EXIT [ESC]
+                        </button>
+                    </div>
+
+                    <div class="my-3 space-y-2 text-xs font-mono text-neutral-300 overflow-y-auto max-h-[300px] pr-1">
+                        <p class="text-[#d9531e] font-bold">&gt; LINE-PRINTER TRACE: TARGET NUMBER 67 DETECTED</p>
+                        <div class="bg-[#141517] border border-[#383d44] p-3 space-y-1 text-[11px] text-neutral-400">
+                            <p>&gt; MATHEMATICAL ANALYSIS:</p>
+                            <p>  • 19th Prime Number (Lucky Prime &amp; Chen Prime)</p>
+                            <p>  • Smallest prime not a Mersenne or Fermat prime</p>
+                            <p>  • Atomic Number: 67 (Holmium / Ho)</p>
+                            <p>  • Binary Representation: 1000011_2</p>
+                            <p>  • Hexadecimal: 0x43</p>
+                            <p>  • Base-8 Octal: 103_8</p>
+                        </div>
+                        <p class="text-neutral-400 text-[11px] italic">
+                            &gt; Hardware oscillator tuned to resonant baseline 670Hz tone sequence.
+                        </p>
+                        <div id="diagnostic-log" class="text-[10px] text-neutral-500 font-mono">
+                            &gt; Memory registers verified. All arithmetic units operational.
+                        </div>
+                    </div>
+
+                    <div class="border-t border-[#383d44] pt-2 flex justify-between items-center text-[10px] text-neutral-500">
+                        <span>RESONANCE TONE: 670Hz</span>
+                        <span>PRESS 'AC' OR ESC TO DISMISS</span>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Keyboard Layout Grid -->
-            <div class="grid grid-cols-4 gap-2.5 sm:gap-3">
-                
-                <!-- Row 1: Memory & Clear Controls -->
-                <button data-action="clear-all" class="key-tactile bg-[#3e4451] hover:bg-[#4b5263] text-rose-300 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base border border-rose-900/30">
-                    AC
-                </button>
-                <button data-action="delete" class="key-tactile bg-[#3e4451] hover:bg-[#4b5263] text-neutral-200 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base">
-                    DEL
-                </button>
-                <button data-action="percent" class="key-tactile bg-[#3e4451] hover:bg-[#4b5263] text-neutral-200 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base">
-                    %
-                </button>
-                <button data-operator="/" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    ÷
-                </button>
-
-                <!-- Row 2 -->
-                <button data-number="7" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    7
-                </button>
-                <button data-number="8" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    8
-                </button>
-                <button data-number="9" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    9
-                </button>
-                <button data-operator="*" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    ×
-                </button>
-
-                <!-- Row 3 -->
-                <button data-number="4" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    4
-                </button>
-                <button data-number="5" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    5
-                </button>
-                <button data-number="6" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    6
-                </button>
-                <button data-operator="-" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    −
-                </button>
-
-                <!-- Row 4 -->
-                <button data-number="1" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    1
-                </button>
-                <button data-number="2" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    2
-                </button>
-                <button data-number="3" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    3
-                </button>
-                <button data-operator="+" class="key-tactile bg-[#aa4b2a] hover:bg-[#be532f] text-white font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    +
-                </button>
-
-                <!-- Row 5 -->
-                <button data-action="toggle-sign" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-300 font-bold py-3.5 sm:py-4 rounded-md text-sm sm:text-base">
-                    ±
-                </button>
-                <button data-number="0" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    0
-                </button>
-                <button data-action="decimal" class="key-tactile bg-[#282c34] hover:bg-[#323842] text-neutral-100 font-bold py-3.5 sm:py-4 rounded-md text-base sm:text-lg">
-                    .
-                </button>
-                <button data-action="equals" class="key-tactile bg-[#d97724] hover:bg-[#ea842c] text-neutral-950 font-extrabold py-3.5 sm:py-4 rounded-md text-lg sm:text-xl">
-                    =
-                </button>
-            </div>
-
-            <!-- Footer Legend & Instructions -->
-            <footer class="mt-5 pt-3 border-t border-[#2c313a] flex justify-between items-center text-[10px] text-neutral-500 uppercase tracking-widest font-mono">
-                <span>KEYBOARD READY</span>
-                <span>NUMPAD SUPPORT</span>
-            </footer>
-
-            <!-- Secret "67" Terminal Console Easter Egg Overlay -->
-            <div id="terminal-overlay" class="hidden absolute inset-0 bg-[#0c0d0f] rounded-xl border-2 border-amber-600/80 p-4 sm:p-5 flex-col justify-between z-20 terminal-scanlines">
-                <div class="flex justify-between items-center border-b border-amber-900/60 pb-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                        <span class="text-xs font-bold text-amber-500 tracking-wider">PROTOCOL_67 // ACTIVE</span>
+            <!-- Right Panel: Real-Time Paper Tape Ledger (4 cols) -->
+            <div class="lg:col-span-4 bg-[#18191b] border-2 border-[#383d44] p-4 flex flex-col justify-between shadow-2xl">
+                <div>
+                    <div class="flex justify-between items-center border-b border-[#383d44] pb-2 mb-3">
+                        <span class="text-xs font-bold text-neutral-300 tracking-wider">PAPER TAPE LEDGER</span>
+                        <button id="btn-clear-tape" class="text-[10px] text-neutral-400 hover:text-white border border-[#383d44] px-1.5 py-0.5">CLEAR TAPE</button>
                     </div>
-                    <button id="close-terminal" class="text-xs bg-amber-950 text-amber-400 hover:bg-amber-900 px-2 py-1 rounded border border-amber-700/50 font-bold">
-                        ESC / DISMISS
-                    </button>
-                </div>
-
-                <div class="my-3 space-y-2 text-xs font-mono text-amber-400/90 overflow-y-auto max-h-[230px] pr-1">
-                    <p class="text-amber-300 font-semibold">&gt; SEQUENCE '67' TRIGGERED</p>
-                    <div class="bg-amber-950/20 border border-amber-900/40 p-2 rounded space-y-1">
-                        <p>&gt; Prime Number: 19th prime number</p>
-                        <p>&gt; Lucky Prime &amp; Chen Prime</p>
-                        <p>&gt; Atomic Number: Holmium (Ho)</p>
-                        <p>&gt; Binary: 1000011</p>
-                        <p>&gt; Hexadecimal: 0x43</p>
-                    </div>
-                    <p class="text-amber-500/80 text-[11px] leading-relaxed italic">
-                        "67 is the smallest prime number that is not a Mersenne prime or Fermat prime."
-                    </p>
-                    <div id="synth-log" class="text-[10px] text-amber-600 font-mono pt-1">
-                        &gt; Audio synth resonant tone played at 670Hz.
+                    
+                    <!-- Paper Printout Container -->
+                    <div id="paper-tape" class="paper-tape border border-[#2c3036] p-3 text-xs font-mono text-neutral-300 h-[380px] lg:h-[420px] overflow-y-auto space-y-2 shadow-inner">
+                        <div class="text-neutral-600 text-[11px] border-b border-neutral-800 pb-1">-- SYSTEM READY --</div>
                     </div>
                 </div>
 
-                <div class="border-t border-amber-900/60 pt-2 flex justify-between items-center text-[10px] text-amber-600">
-                    <span>SYNTH FREQ: 670Hz</span>
-                    <span>PRESS 'AC' TO RETURN</span>
+                <div class="mt-3 pt-2 border-t border-[#383d44] text-[10px] text-neutral-500 flex justify-between">
+                    <span>ENTRY LOG: ACTIVE</span>
+                    <span id="entry-count">0 ENTRIES</span>
                 </div>
             </div>
 
@@ -218,29 +310,40 @@
     </main>
 
     <script>
-        // Core Calculator State Management
-        class Calculator {
-            constructor(mainDisplayEl, formulaDisplayEl, indicatorEl, statusTagEl) {
-                this.mainDisplayEl = mainDisplayEl;
-                this.formulaDisplayEl = formulaDisplayEl;
-                this.indicatorEl = indicatorEl;
-                this.statusTagEl = statusTagEl;
-                
-                this.reset();
-                this.setupAudioContext();
+        // Scientific Calculator Engine & State Machine
+        class ScientificCalculator {
+            constructor() {
+                this.mainDisplay = document.getElementById('main-display');
+                this.formulaDisplay = document.getElementById('formula-display');
+                this.paperTape = document.getElementById('paper-tape');
+                this.entryCountEl = document.getElementById('entry-count');
+                this.statusTag = document.getElementById('status-tag');
+                this.easterIndicator = document.getElementById('easter-indicator');
+                this.terminalOverlay = document.getElementById('terminal-overlay');
+                this.memIndicator = document.getElementById('mem-indicator');
+                this.led2nd = document.getElementById('led-2nd');
+
+                this.resetAll();
+                this.setupAudio();
             }
 
-            reset() {
+            resetAll() {
                 this.currentInput = '0';
-                this.previousInput = null;
+                this.previousOperand = null;
                 this.operator = null;
                 this.waitingForNextOperand = false;
                 this.expressionHistory = '';
+                this.memory = 0;
+                this.isRad = false;
+                this.is2nd = false;
+                this.entryCount = 0;
+                
                 this.updateDisplay();
+                this.updateMemoryIndicator();
             }
 
-            // Web Audio Synthesizer for tactile feedback & 67 easter egg frequency
-            setupAudioContext() {
+            // Web Audio Synth for Tactile Feedback & 67 Easter Egg Frequency
+            setupAudio() {
                 this.audioCtx = null;
             }
 
@@ -253,11 +356,10 @@
                 }
             }
 
-            playTone(freq = 440, type = 'sine', duration = 0.05) {
+            playTone(freq = 440, type = 'sine', duration = 0.04) {
                 try {
                     this.initAudio();
                     if (!this.audioCtx) return;
-                    
                     if (this.audioCtx.state === 'suspended') {
                         this.audioCtx.resume();
                     }
@@ -268,7 +370,7 @@
                     osc.type = type;
                     osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
 
-                    gain.gain.setValueAtTime(0.08, this.audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.06, this.audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
 
                     osc.connect(gain);
@@ -277,17 +379,17 @@
                     osc.start();
                     osc.stop(this.audioCtx.currentTime + duration);
                 } catch (e) {
-                    // Audio context errors handled gracefully
+                    // Audio failure ignored gracefully
                 }
             }
 
-            play67Sequence() {
-                this.playTone(335, 'square', 0.1);
-                setTimeout(() => this.playTone(670, 'sawtooth', 0.3), 100);
+            play67DiagnosticAudio() {
+                this.playTone(335, 'square', 0.08);
+                setTimeout(() => this.playTone(670, 'sawtooth', 0.25), 90);
             }
 
             inputDigit(digit) {
-                this.playTone(520, 'sine', 0.03);
+                this.playTone(500, 'sine', 0.03);
 
                 if (this.waitingForNextOperand) {
                     this.currentInput = digit;
@@ -301,7 +403,7 @@
             }
 
             inputDecimal() {
-                this.playTone(480, 'sine', 0.03);
+                this.playTone(450, 'sine', 0.03);
 
                 if (this.waitingForNextOperand) {
                     this.currentInput = '0.';
@@ -313,57 +415,75 @@
                 this.updateDisplay();
             }
 
-            handleOperator(nextOperator) {
-                this.playTone(380, 'triangle', 0.04);
-                const inputValue = parseFloat(this.currentInput);
+            inputConstant(type) {
+                this.playTone(480, 'sine', 0.03);
+                let val = 0;
+                if (type === 'pi') val = Math.PI;
+                if (type === 'e') val = Math.E;
 
-                if (this.operator && this.waitingForNextOperand) {
-                    this.operator = nextOperator;
-                    this.expressionHistory = `${this.previousInput} ${this.formatOperatorSymbol(nextOperator)}`;
-                    this.updateDisplay();
-                    return;
-                }
-
-                if (this.previousInput === null) {
-                    this.previousInput = inputValue;
-                } else if (this.operator) {
-                    const result = this.calculate(this.previousInput, inputValue, this.operator);
-                    this.currentInput = String(this.formatResult(result));
-                    this.previousInput = result;
-                }
-
-                this.waitingForNextOperand = true;
-                this.operator = nextOperator;
-                this.expressionHistory = `${this.previousInput} ${this.formatOperatorSymbol(nextOperator)}`;
+                this.currentInput = String(this.formatResult(val));
+                this.waitingForNextOperand = false;
                 this.updateDisplay();
                 this.check67Trigger();
             }
 
-            calculate(firstOperand, secondOperand, operator) {
-                switch (operator) {
-                    case '+': return firstOperand + secondOperand;
-                    case '-': return firstOperand - secondOperand;
-                    case '*': return firstOperand * secondOperand;
-                    case '/': return secondOperand !== 0 ? firstOperand / secondOperand : 'Error';
-                    default: return secondOperand;
+            handleOperator(op) {
+                this.playTone(380, 'triangle', 0.04);
+                const val = parseFloat(this.currentInput);
+
+                if (this.operator && this.waitingForNextOperand) {
+                    this.operator = op;
+                    this.expressionHistory = `${this.previousOperand} ${this.formatOpSymbol(op)}`;
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (this.previousOperand === null) {
+                    this.previousOperand = val;
+                } else if (this.operator) {
+                    const res = this.calculate(this.previousOperand, val, this.operator);
+                    this.currentInput = String(this.formatResult(res));
+                    this.previousOperand = res;
+                }
+
+                this.waitingForNextOperand = true;
+                this.operator = op;
+                this.expressionHistory = `${this.previousOperand} ${this.formatOpSymbol(op)}`;
+                this.updateDisplay();
+                this.check67Trigger();
+            }
+
+            calculate(a, b, op) {
+                switch(op) {
+                    case '+': return a + b;
+                    case '-': return a - b;
+                    case '*': return a * b;
+                    case '/': return b !== 0 ? a / b : 'Error';
+                    case 'pow': return Math.pow(a, b);
+                    case 'mod': return a % b;
+                    default: return b;
                 }
             }
 
             evaluateEquals() {
-                this.playTone(600, 'sine', 0.05);
+                this.playTone(580, 'sine', 0.05);
 
-                if (this.operator === null || this.previousInput === null) {
-                    // Re-evaluating standalone input check
+                if (this.operator === null || this.previousOperand === null) {
                     this.check67Trigger(true);
                     return;
                 }
 
-                const inputValue = parseFloat(this.currentInput);
-                const result = this.calculate(this.previousInput, inputValue, this.operator);
+                const currentVal = parseFloat(this.currentInput);
+                const result = this.calculate(this.previousOperand, currentVal, this.operator);
 
-                this.expressionHistory = `${this.previousInput} ${this.formatOperatorSymbol(this.operator)} ${inputValue} =`;
-                this.currentInput = String(this.formatResult(result));
-                this.previousInput = null;
+                const fullExpr = `${this.previousOperand} ${this.formatOpSymbol(this.operator)} ${currentVal}`;
+                const formattedRes = this.formatResult(result);
+
+                this.logToPaperTape(fullExpr, formattedRes);
+
+                this.expressionHistory = `${fullExpr} =`;
+                this.currentInput = String(formattedRes);
+                this.previousOperand = null;
                 this.operator = null;
                 this.waitingForNextOperand = true;
 
@@ -371,8 +491,83 @@
                 this.check67Trigger(true);
             }
 
+            handleFunction(fn) {
+                this.playTone(420, 'sine', 0.04);
+                let val = parseFloat(this.currentInput);
+                let res = 0;
+                let exprLabel = `${fn}(${val})`;
+
+                // Convert to radians if required for trig functions
+                const toRad = (angle) => this.isRad ? angle : (angle * Math.PI) / 180;
+                const fromRad = (rad) => this.isRad ? rad : (rad * 180) / Math.PI;
+
+                switch(fn) {
+                    case 'sin':
+                        res = this.is2nd ? fromRad(Math.asin(val)) : Math.sin(toRad(val));
+                        exprLabel = this.is2nd ? `asin(${val})` : `sin(${val})`;
+                        break;
+                    case 'cos':
+                        res = this.is2nd ? fromRad(Math.acos(val)) : Math.cos(toRad(val));
+                        exprLabel = this.is2nd ? `acos(${val})` : `cos(${val})`;
+                        break;
+                    case 'tan':
+                        res = this.is2nd ? fromRad(Math.atan(val)) : Math.tan(toRad(val));
+                        exprLabel = this.is2nd ? `atan(${val})` : `tan(${val})`;
+                        break;
+                    case 'ln':
+                        res = this.is2nd ? Math.exp(val) : Math.log(val);
+                        exprLabel = this.is2nd ? `e^(${val})` : `ln(${val})`;
+                        break;
+                    case 'log10':
+                        res = this.is2nd ? Math.pow(10, val) : Math.log10(val);
+                        exprLabel = this.is2nd ? `10^(${val})` : `log(${val})`;
+                        break;
+                    case 'sqr':
+                        res = Math.pow(val, 2);
+                        exprLabel = `sqr(${val})`;
+                        break;
+                    case 'sqrt':
+                        res = Math.sqrt(val);
+                        exprLabel = `√(${val})`;
+                        break;
+                    case 'cbrt':
+                        res = Math.cbrt(val);
+                        exprLabel = `∛(${val})`;
+                        break;
+                    case 'fact':
+                        res = this.factorial(val);
+                        exprLabel = `${val}!`;
+                        break;
+                    case 'abs':
+                        res = Math.abs(val);
+                        exprLabel = `abs(${val})`;
+                        break;
+                    case 'inv':
+                        res = val !== 0 ? 1 / val : 'Error';
+                        exprLabel = `1/(${val})`;
+                        break;
+                }
+
+                const formatted = this.formatResult(res);
+                this.logToPaperTape(exprLabel, formatted);
+
+                this.currentInput = String(formatted);
+                this.waitingForNextOperand = true;
+                this.updateDisplay();
+                this.check67Trigger();
+            }
+
+            factorial(n) {
+                if (n < 0) return 'Error';
+                if (n === 0 || n === 1) return 1;
+                if (n > 170) return Infinity; // Prevent execution overflow
+                let res = 1;
+                for (let i = 2; i <= Math.floor(n); i++) res *= i;
+                return res;
+            }
+
             toggleSign() {
-                this.playTone(450, 'sine', 0.03);
+                this.playTone(400, 'sine', 0.03);
                 if (this.currentInput !== '0' && this.currentInput !== 'Error') {
                     this.currentInput = this.currentInput.startsWith('-') ? this.currentInput.slice(1) : '-' + this.currentInput;
                     this.updateDisplay();
@@ -381,7 +576,7 @@
             }
 
             applyPercent() {
-                this.playTone(450, 'sine', 0.03);
+                this.playTone(400, 'sine', 0.03);
                 const val = parseFloat(this.currentInput);
                 if (!isNaN(val)) {
                     this.currentInput = String(val / 100);
@@ -390,7 +585,7 @@
             }
 
             deleteLastChar() {
-                this.playTone(300, 'sine', 0.03);
+                this.playTone(320, 'sine', 0.03);
                 if (this.waitingForNextOperand) return;
 
                 if (this.currentInput.length > 1) {
@@ -402,81 +597,176 @@
                 this.check67Trigger();
             }
 
+            // Memory Operations
+            handleMemory(action) {
+                this.playTone(460, 'sine', 0.03);
+                const val = parseFloat(this.currentInput) || 0;
+
+                switch(action) {
+                    case 'mc':
+                        this.memory = 0;
+                        break;
+                    case 'mr':
+                        this.currentInput = String(this.formatResult(this.memory));
+                        this.waitingForNextOperand = true;
+                        break;
+                    case 'm-plus':
+                        this.memory += val;
+                        break;
+                    case 'm-minus':
+                        this.memory -= val;
+                        break;
+                }
+
+                this.updateMemoryIndicator();
+                this.updateDisplay();
+            }
+
+            updateMemoryIndicator() {
+                if (this.memory !== 0) {
+                    this.memIndicator.textContent = `MEM: ${this.formatResult(this.memory)}`;
+                    this.memIndicator.classList.remove('text-neutral-600');
+                    this.memIndicator.classList.add('text-[#7ba8b6]');
+                } else {
+                    this.memIndicator.textContent = 'MEM: EMPTY';
+                    this.memIndicator.classList.remove('text-[#7ba8b6]');
+                    this.memIndicator.classList.add('text-neutral-600');
+                }
+            }
+
+            toggle2nd() {
+                this.playTone(500, 'sine', 0.03);
+                this.is2nd = !this.is2nd;
+                
+                if (this.is2nd) {
+                    this.led2nd.classList.remove('bg-neutral-600');
+                    this.led2nd.classList.add('bg-amber-400');
+                    this.update2ndKeyLabels(true);
+                } else {
+                    this.led2nd.classList.remove('bg-amber-400');
+                    this.led2nd.classList.add('bg-neutral-600');
+                    this.update2ndKeyLabels(false);
+                }
+            }
+
+            update2ndKeyLabels(active) {
+                const sinBtn = document.querySelector('[data-func="sin"] .func-primary');
+                const cosBtn = document.querySelector('[data-func="cos"] .func-primary');
+                const tanBtn = document.querySelector('[data-func="tan"] .func-primary');
+                const lnBtn = document.querySelector('[data-func="ln"] .func-primary');
+                const logBtn = document.querySelector('[data-func="log10"] .func-primary');
+
+                if (sinBtn) sinBtn.textContent = active ? 'asin' : 'sin';
+                if (cosBtn) cosBtn.textContent = active ? 'acos' : 'cos';
+                if (tanBtn) tanBtn.textContent = active ? 'atan' : 'tan';
+                if (lnBtn) lnBtn.textContent = active ? 'e^x' : 'ln';
+                if (logBtn) logBtn.textContent = active ? '10^x' : 'log';
+            }
+
+            logToPaperTape(expression, result) {
+                this.entryCount++;
+                this.entryCountEl.textContent = `${this.entryCount} ENTRIES`;
+
+                const entry = document.createElement('div');
+                entry.className = 'border-b border-neutral-800 pb-1 font-mono text-[11px]';
+                entry.innerHTML = `
+                    <div class="text-neutral-500">${expression}</div>
+                    <div class="text-right text-neutral-200 font-bold">= ${result}</div>
+                `;
+
+                this.paperTape.appendChild(entry);
+                this.paperTape.scrollTop = this.paperTape.scrollHeight;
+            }
+
             formatResult(num) {
                 if (typeof num === 'string') return num;
                 if (isNaN(num) || !isFinite(num)) return 'Error';
-                // Precision clamping to avoid float overflow
-                return Math.round(num * 1e8) / 1e8;
+                return Math.round(num * 1e10) / 1e10;
             }
 
-            formatOperatorSymbol(op) {
+            formatOpSymbol(op) {
                 switch(op) {
                     case '/': return '÷';
                     case '*': return '×';
                     case '-': return '−';
                     case '+': return '+';
+                    case 'pow': return '^';
+                    case 'mod': return 'MOD';
                     default: return op;
                 }
             }
 
             updateDisplay() {
-                this.mainDisplayEl.textContent = this.currentInput;
-                this.formulaDisplayEl.textContent = this.expressionHistory || '\u00A0';
+                this.mainDisplay.textContent = this.currentInput;
+                this.formulaDisplay.textContent = this.expressionHistory || '\u00A0';
             }
 
             check67Trigger(forceConsole = false) {
                 const is67 = this.currentInput === '67' || this.currentInput === '67.0';
-                
+
                 if (is67) {
-                    this.indicatorEl.classList.remove('hidden');
-                    this.statusTagEl.textContent = 'MODE: 67';
-                    this.statusTagEl.classList.add('text-amber-500');
+                    this.easterIndicator.classList.remove('hidden');
+                    this.statusTag.textContent = 'PROTOCOL 67';
+                    this.statusTag.classList.add('text-[#d9531e]', 'border-[#d9531e]');
 
                     if (forceConsole) {
-                        this.triggerEasterEggOverlay();
+                        this.openTerminal();
                     }
                 } else {
-                    this.indicatorEl.classList.add('hidden');
-                    this.statusTagEl.textContent = 'STATE: READY';
-                    this.statusTagEl.classList.remove('text-amber-500');
+                    this.easterIndicator.classList.add('hidden');
+                    this.statusTag.textContent = 'READY';
+                    this.statusTag.classList.remove('text-[#d9531e]', 'border-[#d9531e]');
                 }
             }
 
-            triggerEasterEggOverlay() {
-                const overlay = document.getElementById('terminal-overlay');
-                overlay.classList.remove('hidden');
-                overlay.classList.add('flex');
-                this.play67Sequence();
+            openTerminal() {
+                this.terminalOverlay.classList.remove('hidden');
+                this.terminalOverlay.classList.add('flex');
+                this.play67DiagnosticAudio();
+            }
+
+            closeTerminal() {
+                this.terminalOverlay.classList.add('hidden');
+                this.terminalOverlay.classList.remove('flex');
             }
         }
 
-        // Initialize Calculator
+        // Initialize Calculator & UI Wiring
         document.addEventListener('DOMContentLoaded', () => {
-            const mainDisplay = document.getElementById('main-display');
-            const formulaDisplay = document.getElementById('formula-display');
-            const indicator = document.getElementById('easter-indicator');
-            const statusTag = document.getElementById('status-tag');
-            const terminalOverlay = document.getElementById('terminal-overlay');
-            const closeTerminalBtn = document.getElementById('close-terminal');
+            const calc = new ScientificCalculator();
 
-            const calc = new Calculator(mainDisplay, formulaDisplay, indicator, statusTag);
-
-            document.querySelectorAll('button[data-number]').forEach(btn => {
+            // Numeric Keys
+            document.querySelectorAll('[data-number]').forEach(btn => {
                 btn.addEventListener('click', () => calc.inputDigit(btn.dataset.number));
             });
 
-            document.querySelectorAll('button[data-operator]').forEach(btn => {
+            // Operators
+            document.querySelectorAll('[data-operator]').forEach(btn => {
                 btn.addEventListener('click', () => calc.handleOperator(btn.dataset.operator));
             });
 
-            document.querySelectorAll('button[data-action]').forEach(btn => {
+            // Functions
+            document.querySelectorAll('[data-func]').forEach(btn => {
+                btn.addEventListener('click', () => calc.handleFunction(btn.dataset.func));
+            });
+
+            // Constants
+            document.querySelectorAll('[data-const]').forEach(btn => {
+                btn.addEventListener('click', () => calc.inputConstant(btn.dataset.const));
+            });
+
+            // Actions
+            document.querySelectorAll('[data-action]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const action = btn.dataset.action;
-                    switch (action) {
+                    const act = btn.dataset.action;
+                    switch(act) {
                         case 'clear-all':
-                            calc.reset();
-                            terminalOverlay.classList.add('hidden');
-                            terminalOverlay.classList.remove('flex');
+                            calc.resetAll();
+                            calc.closeTerminal();
+                            break;
+                        case 'clear-entry':
+                            calc.currentInput = '0';
+                            calc.updateDisplay();
                             break;
                         case 'delete':
                             calc.deleteLastChar();
@@ -493,65 +783,82 @@
                         case 'percent':
                             calc.applyPercent();
                             break;
+                        case 'mc':
+                        case 'mr':
+                        case 'm-plus':
+                        case 'm-minus':
+                            calc.handleMemory(act);
+                            break;
                     }
                 });
             });
 
-            closeTerminalBtn.addEventListener('click', () => {
-                terminalOverlay.classList.add('hidden');
-                terminalOverlay.classList.remove('flex');
+            // Angle Mode Toggle Buttons
+            const btnDeg = document.getElementById('btn-deg');
+            const btnRad = document.getElementById('btn-rad');
+
+            btnDeg.addEventListener('click', () => {
+                calc.isRad = false;
+                btnDeg.className = "px-2 py-0.5 text-[11px] font-bold bg-[#d9531e] text-white";
+                btnRad.className = "px-2 py-0.5 text-[11px] font-bold text-neutral-400 hover:text-white";
             });
 
+            btnRad.addEventListener('click', () => {
+                calc.isRad = true;
+                btnRad.className = "px-2 py-0.5 text-[11px] font-bold bg-[#d9531e] text-white";
+                btnDeg.className = "px-2 py-0.5 text-[11px] font-bold text-neutral-400 hover:text-white";
+            });
+
+            // 2nd Function Toggle
+            document.getElementById('btn-2nd').addEventListener('click', () => calc.toggle2nd());
+
+            // Terminal Close Buttons
+            document.getElementById('close-terminal').addEventListener('click', () => calc.closeTerminal());
+
+            // Clear Paper Tape Ledger
+            document.getElementById('btn-clear-tape').addEventListener('click', () => {
+                const tape = document.getElementById('paper-tape');
+                tape.innerHTML = '<div class="text-neutral-600 text-[11px] border-b border-neutral-800 pb-1">-- TAPE CLEARED --</div>';
+                calc.entryCount = 0;
+                document.getElementById('entry-count').textContent = '0 ENTRIES';
+            });
+
+            // Full Physical Keyboard Support
             document.addEventListener('keydown', (e) => {
-                // Number Keys (0-9)
                 if (e.key >= '0' && e.key <= '9') {
                     calc.inputDigit(e.key);
-                    highlightButton(`[data-number="${e.key}"]`);
-                }
-                // Operators (+, -, *, /)
-                else if (['+', '-', '*', '/'].includes(e.key)) {
+                    highlightKey(`[data-number="${e.key}"]`);
+                } else if (['+', '-', '*', '/'].includes(e.key)) {
                     e.preventDefault();
                     calc.handleOperator(e.key);
-                    highlightButton(`[data-operator="${e.key}"]`);
-                }
-                // Enter or '=' for Equals
-                else if (e.key === 'Enter' || e.key === '=') {
+                    highlightKey(`[data-operator="${e.key}"]`);
+                } else if (e.key === 'Enter' || e.key === '=') {
                     e.preventDefault();
                     calc.evaluateEquals();
-                    highlightButton('[data-action="equals"]');
-                }
-                // Backspace for DEL
-                else if (e.key === 'Backspace') {
+                    highlightKey('[data-action="equals"]');
+                } else if (e.key === 'Backspace') {
                     e.preventDefault();
                     calc.deleteLastChar();
-                    highlightButton('[data-action="delete"]');
-                }
-                // Escape for Clear All
-                else if (e.key === 'Escape') {
+                    highlightKey('[data-action="delete"]');
+                } else if (e.key === 'Escape') {
                     e.preventDefault();
-                    calc.reset();
-                    terminalOverlay.classList.add('hidden');
-                    terminalOverlay.classList.remove('flex');
-                    highlightButton('[data-action="clear-all"]');
-                }
-                // Decimal point
-                else if (e.key === '.') {
+                    calc.resetAll();
+                    calc.closeTerminal();
+                    highlightKey('[data-action="clear-all"]');
+                } else if (e.key === '.') {
                     calc.inputDecimal();
-                    highlightButton('[data-action="decimal"]');
-                }
-                // Percent %
-                else if (e.key === '%') {
+                    highlightKey('[data-action="decimal"]');
+                } else if (e.key === '%') {
                     calc.applyPercent();
-                    highlightButton('[data-action="percent"]');
+                    highlightKey('[data-action="percent"]');
                 }
             });
 
-            // Visual Key-press Feedback Helper for Keyboard Inputs
-            function highlightButton(selector) {
-                const btn = document.querySelector(selector);
-                if (btn) {
-                    btn.classList.add('key-pressed');
-                    setTimeout(() => btn.classList.remove('key-pressed'), 120);
+            function highlightKey(selector) {
+                const elem = document.querySelector(selector);
+                if (elem) {
+                    elem.classList.add('btn-pressed');
+                    setTimeout(() => elem.classList.remove('btn-pressed'), 100);
                 }
             }
         });
